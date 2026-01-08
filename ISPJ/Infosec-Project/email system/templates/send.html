@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="send-email-header">
+    <h2>Send Email</h2>
+</div>
+
+{% if error %}
+<div class="error">{{ error }}</div>
+{% endif %}
+
+<form method="POST" class="form" enctype="multipart/form-data">
+    <input type="email" name="receiver" placeholder="Receiver Email" required>
+    <input type="text" name="subject" placeholder="Subject" required>
+    <textarea name="message" placeholder="Write your message here..." required></textarea>
+
+    <label>Attachment (optional)</label>
+    <input type="file" name="attachment">
+
+    <button type="submit">Send Email</button>
+</form>
+
+{% endblock %}

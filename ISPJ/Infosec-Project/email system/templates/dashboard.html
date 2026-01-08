@@ -1,0 +1,581 @@
+{% extends "base.html" %}
+{% block content %}
+
+<style>
+/* ---------- Layout ---------- */
+.dashboard-container {
+    max-width: 1400px;
+    margin: 20px auto;
+    padding: 0 20px;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+}
+
+.dashboard-header {
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.dashboard-header h2 {
+    margin: 0 0 10px 0;
+    color: #333;
+    font-size: 1.8rem;
+}
+
+.user-info {
+    color: #666;
+    font-size: 0.95rem;
+}
+
+/* ---------- Sections ---------- */
+.section {
+    margin-bottom: 40px;
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.section h3 {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #333;
+}
+
+.count-badge {
+    background: #1976d2;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.flagged-section {
+    border-left: 4px solid #ff9800;
+}
+
+.flagged-section h3 {
+    color: #e65100;
+}
+
+.flagged-section .count-badge {
+    background: #ff5722;
+}
+
+/* ---------- Table ---------- */
+.table-wrapper {
+    overflow-x: auto;
+}
+
+.email-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.email-table th {
+    background: #f8f9fa;
+    padding: 12px 10px;
+    border-bottom: 2px solid #dee2e6;
+    text-align: left;
+    font-weight: 600;
+    color: #495057;
+    white-space: nowrap;
+}
+
+.email-table td {
+    padding: 12px 10px;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: top;
+}
+
+.email-table tbody tr:hover {
+    background: #f8f9fa;
+    transition: background 0.2s;
+}
+
+/* ---------- Flagged Row ---------- */
+.flagged-row {
+    background: #fff3e0 !important;
+}
+
+.flagged-row:hover {
+    background: #ffe0b2 !important;
+}
+
+/* ---------- Columns ---------- */
+.col-id { width: 60px; }
+.col-email { width: 180px; }
+.col-ip { width: 110px; }
+.col-subject { width: 200px; max-width: 200px; }
+.col-message { width: 250px; max-width: 250px; }
+.col-file { width: 60px; text-align: center; }
+.col-time { width: 140px; }
+.col-action { width: 80px; text-align: center; }
+
+/* ---------- Text Overflow ---------- */
+.text-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* ---------- Message ---------- */
+.message-preview {
+    max-height: 60px;
+    overflow: hidden;
+    line-height: 1.5;
+    cursor: pointer;
+    position: relative;
+    word-wrap: break-word;
+}
+
+.message-preview.message-expanded {
+    max-height: none;
+}
+
+.message-preview:not(.message-expanded)::after {
+    content: '... (click to expand)';
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(to right, transparent, white 50%);
+    padding-left: 20px;
+    color: #1976d2;
+    font-size: 0.85rem;
+}
+
+.message-preview.message-expanded::after {
+    content: ' (click to collapse)';
+    color: #1976d2;
+    font-size: 0.85rem;
+}
+
+/* ---------- Flags ---------- */
+.flag-reasons {
+    margin-top: 8px;
+    background: #fff3cd;
+    padding: 8px 10px;
+    border-radius: 4px;
+    border-left: 3px solid #ff9800;
+    font-size: 0.85rem;
+}
+
+.flag-reasons strong {
+    color: #e65100;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.flag-reasons ul {
+    margin: 0;
+    padding-left: 20px;
+}
+
+.flag-reasons li {
+    color: #d84315;
+    margin: 3px 0;
+    line-height: 1.4;
+}
+
+/* ---------- Badges ---------- */
+.badge-ip {
+    background: #e3f2fd;
+    color: #1565c0;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.subject-flag {
+    display: inline-block;
+    margin-right: 4px;
+}
+
+/* ---------- Buttons ---------- */
+.icon-btn {
+    background: #e3f2fd;
+    border: none;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 6px 10px;
+    border-radius: 4px;
+    transition: all 0.2s;
+}
+
+.icon-btn:hover {
+    background: #bbdefb;
+    transform: scale(1.1);
+}
+
+.delete-btn {
+    background: #ef5350;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: all 0.2s;
+}
+
+.delete-btn:hover {
+    background: #d32f2f;
+    transform: translateY(-1px);
+}
+
+/* ---------- Modal ---------- */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.6);
+    animation: fadeIn 0.3s;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.modal-content {
+    background-color: #fff;
+    margin: 5% auto;
+    padding: 0;
+    width: 80%;
+    max-width: 900px;
+    border-radius: 8px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    animation: slideDown 0.3s;
+}
+
+@keyframes slideDown {
+    from { 
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to { 
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+}
+
+.modal-close {
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: #999;
+    transition: color 0.2s;
+}
+
+.modal-close:hover {
+    color: #333;
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+/* ---------- Empty State ---------- */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.empty-state-icon {
+    font-size: 3rem;
+    margin-bottom: 10px;
+}
+
+/* ---------- Alert ---------- */
+.alert-warning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    color: #856404;
+}
+
+.alert-warning strong {
+    color: #d84315;
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 0 10px;
+    }
+    
+    .modal-content {
+        width: 95%;
+        margin: 10% auto;
+    }
+    
+    .email-table {
+        font-size: 0.8rem;
+    }
+    
+    .email-table th,
+    .email-table td {
+        padding: 8px 6px;
+    }
+}
+</style>
+
+<div class="dashboard-container">
+
+<!-- Header -->
+<div class="dashboard-header">
+    <h2>📊 Email Security Dashboard</h2>
+    <p class="user-info">Logged in as <strong>{{ user }}</strong></p>
+</div>
+
+<!-- ================= FLAGGED EMAILS ================= -->
+{% if flagged_messages %}
+<div class="section flagged-section">
+    <div class="section-header">
+        <h3>⚠️ Flagged Emails</h3>
+        <span class="count-badge">{{ flagged_messages|length }}</span>
+    </div>
+
+    <div class="alert-warning">
+        <strong>⚠️ Security Warning:</strong> These emails contain suspicious links or content. Exercise caution before clicking any links or opening attachments.
+    </div>
+
+    <div class="table-wrapper">
+        <table class="email-table">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th class="col-email">From</th>
+                    <th class="col-ip">Sender IP</th>
+                    <th class="col-email">To</th>
+                    <th class="col-subject">Subject</th>
+                    <th class="col-message">Message</th>
+                    <th class="col-file">File</th>
+                    <th class="col-time">Time</th>
+                    <th class="col-action">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in flagged_messages %}
+                <tr class="flagged-row">
+                    <td>#{{ m.id }}</td>
+                    <td class="text-truncate" title="{{ m.sender }}">{{ m.sender }}</td>
+                    <td><span class="badge-ip">{{ m.sender_ip }}</span></td>
+                    <td class="text-truncate" title="{{ m.receiver }}">{{ m.receiver }}</td>
+                    <td>
+                        <span class="subject-flag">🚨</span>
+                        <span class="text-truncate" title="{{ m.subject }}">{{ m.subject }}</span>
+                    </td>
+                    <td>
+                        <div class="message-preview" onclick="toggleMessage(this)">
+                            {{ m.message }}
+                        </div>
+
+                        {% if m.flag_reasons %}
+                        <div class="flag-reasons">
+                            <strong>Flagged for:</strong>
+                            <ul>
+                                {% for r in m.flag_reasons %}
+                                <li>{{ r }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if m.attachment %}
+                            <button class="icon-btn" onclick="openModal('{{ m.attachment }}', '{{ m.subject }}')" title="View attachment">📎</button>
+                        {% else %}
+                            <span style="color: #ccc;">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space: nowrap;">{{ m.timestamp }}</td>
+                    <td>
+                        <form method="POST" action="/delete/{{ m.id }}" style="margin: 0;" onsubmit="return confirm('Delete this email?')">
+                            <button type="submit" class="delete-btn">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= SAFE EMAILS ================= -->
+<div class="section">
+    <div class="section-header">
+        <h3>✅ Safe Emails</h3>
+        {% if safe_messages %}
+        <span class="count-badge">{{ safe_messages|length }}</span>
+        {% endif %}
+    </div>
+
+    {% if safe_messages %}
+    <div class="table-wrapper">
+        <table class="email-table">
+            <thead>
+                <tr>
+                    <th class="col-id">ID</th>
+                    <th class="col-email">From</th>
+                    <th class="col-ip">Sender IP</th>
+                    <th class="col-email">To</th>
+                    <th class="col-subject">Subject</th>
+                    <th class="col-message">Message</th>
+                    <th class="col-file">File</th>
+                    <th class="col-time">Time</th>
+                    <th class="col-action">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for m in safe_messages %}
+                <tr>
+                    <td>#{{ m.id }}</td>
+                    <td class="text-truncate" title="{{ m.sender }}">{{ m.sender }}</td>
+                    <td><span class="badge-ip">{{ m.sender_ip }}</span></td>
+                    <td class="text-truncate" title="{{ m.receiver }}">{{ m.receiver }}</td>
+                    <td class="text-truncate" title="{{ m.subject }}">{{ m.subject }}</td>
+                    <td>
+                        <div class="message-preview" onclick="toggleMessage(this)">
+                            {{ m.message }}
+                        </div>
+                    </td>
+                    <td>
+                        {% if m.attachment %}
+                            <button class="icon-btn" onclick="openModal('{{ m.attachment }}', '{{ m.subject }}')" title="View attachment">📎</button>
+                        {% else %}
+                            <span style="color: #ccc;">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="white-space: nowrap;">{{ m.timestamp }}</td>
+                    <td>
+                        <form method="POST" action="/delete/{{ m.id }}" style="margin: 0;" onsubmit="return confirm('Delete this email?')">
+                            <button type="submit" class="delete-btn">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <p>No safe emails yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<!-- No emails at all -->
+{% if not flagged_messages and not safe_messages %}
+<div class="section">
+    <div class="empty-state">
+        <div class="empty-state-icon">📪</div>
+        <h3>No Emails</h3>
+        <p>Your inbox is empty. Send your first message!</p>
+    </div>
+</div>
+{% endif %}
+
+<!-- ================= ATTACHMENT MODAL ================= -->
+<div id="attachmentModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">📎 Attachment</h3>
+            <span class="modal-close" onclick="closeModal()">&times;</span>
+        </div>
+        <div class="modal-body">
+            <iframe id="attachmentFrame" src="" style="width:100%; height:500px; border:none; border-radius:4px;"></iframe>
+        </div>
+    </div>
+</div>
+
+</div>
+
+<script>
+// Toggle message expand/collapse
+function toggleMessage(el) {
+    el.classList.toggle('message-expanded');
+}
+
+// Open attachment modal
+function openModal(url, subject) {
+    console.log('Opening attachment:', url);
+    document.getElementById('modalTitle').textContent = '📎 ' + (subject || 'Attachment');
+    
+    const iframe = document.getElementById('attachmentFrame');
+    
+    // Add error handling for iframe
+    iframe.onerror = function() {
+        alert('Error loading attachment. The file may not exist or you may not have permission to view it.');
+        closeModal();
+    };
+    
+    iframe.onload = function() {
+        console.log('Attachment loaded successfully');
+    };
+    
+    iframe.src = url;
+    document.getElementById('attachmentModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+// Close modal
+function closeModal() {
+    document.getElementById('attachmentModal').style.display = 'none';
+    document.getElementById('attachmentFrame').src = '';
+    document.body.style.overflow = 'auto';
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('attachmentModal');
+    if (event.target === modal) {
+        closeModal();
+    }
+}
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(event) {
+    if (event.key === 'Escape') {
+        closeModal();
+    }
+});
+</script>
+
+{% endblock %}

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h2>My Inbox</h2>
+<p>Logged in as <strong>{{ email }}</strong></p>
+
+<div class="dashboard-card">
+    {% if messages %}
+    <table class="email-table">
+        <tr>
+            <th style="color: black;">From</th>
+            <th style="color: black;">Subject</th>
+            <th style="color: black;">Message</th>
+            <th style="color: black;">Attachment</th>
+            <th style="color: black;">Time</th>
+        </tr>
+
+        {% for m in messages %}
+        <tr {% if m.is_flagged %}style="background:#fff3cd; border-left: 4px solid #ff9800;"{% endif %}>
+            <td>{{ m.sender }}</td>
+
+            <td class="subject">
+                {% if m.is_flagged %}
+                    ⚠️ {{ m.subject }}
+                {% else %}
+                    {{ m.subject }}
+                {% endif %}
+            </td>
+
+            <td class="message-cell">
+                {{ m.message }}
+                {% if m.is_flagged and m.flag_reasons %}
+                <div class="flag-reasons" style="background:#fff8e1; padding:6px; margin-top:5px; border-radius:4px; font-size:0.85em;">
+                    <strong>⚠️ Reasons:</strong>
+                    <ul style="margin:4px 0; padding-left:18px;">
+                        {% for reason in m.flag_reasons %}
+                        <li>{{ reason }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </td>
+
+            <td>
+                {% if m.attachment %}
+                    <a href="/attachment/{{ m.id }}" target="_blank">📎 View</a>
+                {% else %}
+                    —
+                {% endif %}
+            </td>
+
+            <td class="timestamp">{{ m.timestamp }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    {% else %}
+        <p class="empty-text">No emails in your inbox.</p>
+    {% endif %}
+</div>
+
+{% endblock %}

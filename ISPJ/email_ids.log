@@ -1,0 +1,11 @@
+2026-01-02 18:46:40.937705 | XSS_PAYLOAD | sender=user2@example.com | (?is)<script.*?>
+2026-01-02 21:01:38.278098 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:01:51.427555 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:02:14.883686 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:02:27.570853 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:02:39.462267 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:02:49.608975 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:02:49.860942 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:02:59.900874 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:04:20.544324 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>
+2026-01-02 21:04:31.869800 | IDS Triggered | sender=user2@example.com | Pattern matched: (?is)<script.*?>

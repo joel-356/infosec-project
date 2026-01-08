@@ -1,0 +1,13 @@
+{
+    "users": [
+        {
+            "email": "user1@example.com",
+            "name": "User One"
+        },
+        {
+            "email": "user2@example.com",
+            "name": "User Two"
+        }
+    ],
+    "messages": []
+}

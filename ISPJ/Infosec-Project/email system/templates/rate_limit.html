@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<head>
+    <title>Rate Limit Exceeded</title>
+</head>
+<body>
+    <h1>Too Many Requests</h1>
+    <p>You've exceeded the rate limit. Please try again later.</p>
+    <p>{{ error }}</p>
+    <a href="/dashboard">Return to Dashboard</a>
+</body>
+{% endif %}
+
+{% endblock %}
